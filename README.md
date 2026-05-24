@@ -1,1 +1,811 @@
-# funds.glich
+# funds.glich<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="funds.glich — Faceless digital wealth, side hustles, and escaping the 9-to-5 loop." />
+  <title>funds.glich | Escape The Loop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Fira+Code:wght@300;400;500;600&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── VARIABLES ─────────────────────────────── */
+    :root {
+      --black:        #000000;
+      --deep:         #04080a;
+      --green:        #b5ff47;
+      --green-dim:    rgba(181,255,71,0.12);
+      --green-glow:   0 0 20px rgba(181,255,71,0.55), 0 0 60px rgba(181,255,71,0.2);
+      --green-border: rgba(181,255,71,0.25);
+      --white:        #ffffff;
+      --gray:         #888888;
+      --mid-gray:     #444444;
+      --red-glitch:   #ff2d55;
+    }
+
+    /* ─── RESET ──────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    img, canvas { display: block; }
+
+    /* ─── BASE ───────────────────────────────────── */
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: crosshair;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── SCANLINE OVERLAY ───────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.04) 3px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 9000;
+    }
+
+    /* ─── NOISE GRAIN ────────────────────────────── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 8999;
+    }
+
+    /* ─── MATRIX CANVAS ──────────────────────────── */
+    #matrix-rain {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.045;
+      pointer-events: none;
+    }
+
+    /* ─── WRAPPER ────────────────────────────────── */
+    .wrapper { position: relative; z-index: 1; }
+
+    /* ─── NAVBAR ─────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 2rem;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(181,255,71,0.09);
+    }
+
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.08em;
+      text-shadow: var(--green-glow);
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      color: var(--gray);
+      letter-spacing: 0.18em;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse-anim 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-anim {
+      0%, 100% { box-shadow: 0 0 4px rgba(181,255,71,0.9); }
+      50%       { box-shadow: 0 0 14px rgba(181,255,71,1), 0 0 28px rgba(181,255,71,0.4); }
+    }
+
+    /* ─── HERO ───────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 130px 1.5rem 90px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid overlay on hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(181,255,71,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(181,255,71,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* Corner decoration lines */
+    .hero-corner {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      pointer-events: none;
+    }
+    .hero-corner--tl { top: 90px; left: 20px; border-top: 1px solid var(--green); border-left: 1px solid var(--green); opacity: 0.4; }
+    .hero-corner--tr { top: 90px; right: 20px; border-top: 1px solid var(--green); border-right: 1px solid var(--green); opacity: 0.4; }
+    .hero-corner--bl { bottom: 60px; left: 20px; border-bottom: 1px solid var(--green); border-left: 1px solid var(--green); opacity: 0.4; }
+    .hero-corner--br { bottom: 60px; right: 20px; border-bottom: 1px solid var(--green); border-right: 1px solid var(--green); opacity: 0.4; }
+
+    .hero-eyebrow {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      color: var(--green);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 1.8rem;
+      opacity: 0.9;
+    }
+
+    .hero-eyebrow::before { content: '> '; }
+
+    /* ─── GLITCH HEADLINE ────────────────────────── */
+    .hero-h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.85rem, 5.2vw, 4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      max-width: 880px;
+      margin-bottom: 1.8rem;
+      position: relative;
+    }
+
+    .glitch-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .glitch-wrap::before,
+    .glitch-wrap::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Orbitron', monospace;
+      font-size: inherit;
+      font-weight: 900;
+      line-height: inherit;
+      letter-spacing: inherit;
+      white-space: pre-wrap;
+    }
+
+    .glitch-wrap::before {
+      color: var(--red-glitch);
+      animation: glitch-before 4s steps(1) infinite;
+      clip-path: polygon(0 18%, 100% 18%, 100% 38%, 0 38%);
+      transform: translateX(-3px);
+    }
+
+    .glitch-wrap::after {
+      color: var(--green);
+      animation: glitch-after 4s steps(1) infinite;
+      clip-path: polygon(0 62%, 100% 62%, 100% 82%, 0 82%);
+      transform: translateX(3px);
+    }
+
+    @keyframes glitch-before {
+      0%, 88%, 100% { opacity: 0; transform: translateX(-3px); }
+      90%            { opacity: 0.7; transform: translateX(-4px) skewX(-2deg); }
+      92%            { opacity: 0; transform: translateX(3px); }
+      94%            { opacity: 0.6; transform: translateX(-3px); }
+      96%            { opacity: 0; }
+    }
+
+    @keyframes glitch-after {
+      0%, 83%, 100% { opacity: 0; transform: translateX(3px); }
+      85%           { opacity: 0.7; transform: translateX(4px) skewX(2deg); }
+      87%           { opacity: 0; transform: translateX(-3px); }
+      89%           { opacity: 0.6; transform: translateX(3px); }
+      91%           { opacity: 0; }
+    }
+
+    .text-green {
+      color: var(--green);
+      text-shadow: var(--green-glow);
+    }
+
+    /* ─── HERO SUB ───────────────────────────────── */
+    .hero-sub {
+      font-size: clamp(0.95rem, 2.2vw, 1.12rem);
+      color: var(--gray);
+      max-width: 570px;
+      line-height: 1.85;
+      margin-bottom: 2.8rem;
+      font-weight: 300;
+    }
+
+    /* ─── CTA BUTTONS ────────────────────────────── */
+    .btn {
+      display: inline-block;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 1rem 2.4rem;
+      position: relative;
+      transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Primary: filled green */
+    .btn-primary {
+      background: var(--green);
+      color: #000;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      box-shadow: 0 0 20px rgba(181,255,71,0.25);
+    }
+
+    .btn-primary:hover {
+      background: #000;
+      color: var(--green);
+      box-shadow: 0 0 50px rgba(181,255,71,0.55), 0 0 100px rgba(181,255,71,0.2), inset 0 0 25px rgba(181,255,71,0.08);
+      transform: translateY(-3px);
+    }
+
+    /* After-label for buttons */
+    .btn-primary::after,
+    .btn-secondary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      border: 1px solid var(--green);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .btn-primary:hover::after,
+    .btn-secondary:hover::after {
+      opacity: 1;
+    }
+
+    /* Secondary: ghost */
+    .btn-secondary {
+      background: transparent;
+      color: var(--green);
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      border: 1px solid rgba(181,255,71,0.35);
+      box-shadow: 0 0 15px rgba(181,255,71,0.1), inset 0 0 15px rgba(181,255,71,0.03);
+    }
+
+    .btn-secondary:hover {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+      box-shadow: 0 0 60px rgba(181,255,71,0.6), 0 0 120px rgba(181,255,71,0.25);
+      transform: translateY(-3px);
+    }
+
+    /* ─── SCROLL INDICATOR ───────────────────────── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.65rem;
+      color: var(--mid-gray);
+      letter-spacing: 0.22em;
+      animation: fade-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes fade-pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 0.15; }
+    }
+
+    /* ─── SECTION SHARED ─────────────────────────── */
+    section { position: relative; }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .sec-pad { padding: 90px 0; }
+
+    .sec-label {
+      font-family: 'Fira Code', monospace;
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      font-weight: 500;
+      color: var(--green);
+      text-shadow: 0 0 20px rgba(181,255,71,0.35);
+      letter-spacing: 0.06em;
+      margin-bottom: 2.2rem;
+    }
+
+    /* ─── PROBLEM SECTION ────────────────────────── */
+    .problem {
+      background: var(--black);
+      border-top: 1px solid rgba(181,255,71,0.07);
+      border-bottom: 1px solid rgba(181,255,71,0.07);
+    }
+
+    .terminal-card {
+      background: #020202;
+      border: 1px solid rgba(181,255,71,0.18);
+      border-left: 3px solid var(--green);
+      padding: 2.8rem 2.5rem 2.5rem;
+      position: relative;
+      box-shadow: 0 0 50px rgba(181,255,71,0.04), inset 0 0 60px rgba(0,0,0,0.6);
+    }
+
+    /* Terminal top bar */
+    .terminal-card::before {
+      content: '● ● ●';
+      position: absolute;
+      top: 1rem;
+      left: 1.5rem;
+      font-size: 0.42rem;
+      letter-spacing: 0.5em;
+      color: rgba(181,255,71,0.35);
+    }
+
+    /* Right-edge scan line animation */
+    .terminal-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent 0%, var(--green) 50%, transparent 100%);
+      opacity: 0;
+      animation: scan-right 5s ease-in-out infinite 2s;
+    }
+
+    @keyframes scan-right {
+      0%   { opacity: 0; transform: translateY(-100%); }
+      20%  { opacity: 0.5; }
+      80%  { opacity: 0.5; }
+      100% { opacity: 0; transform: translateY(100%); }
+    }
+
+    .terminal-body {
+      font-size: clamp(1rem, 2vw, 1.12rem);
+      color: #c0c0c0;
+      line-height: 1.9;
+      font-weight: 300;
+      margin-top: 0.8rem;
+    }
+
+    .terminal-body .hi { color: var(--green); font-weight: 500; }
+    .terminal-body .lo { color: var(--gray); }
+
+    /* ─── GAMEPLAN ────────────────────────────────── */
+    .gameplan {
+      background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(181,255,71,0.04) 0%, transparent 70%), var(--black);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+
+    /* ─── FEATURE CARD ───────────────────────────── */
+    .feat-card {
+      background: #030303;
+      border: 1px solid rgba(181,255,71,0.12);
+      padding: 2.2rem 1.8rem;
+      position: relative;
+      transition: border-color 0.3s ease, transform 0.35s cubic-bezier(0.23,1,0.32,1), box-shadow 0.35s ease;
+      overflow: hidden;
+    }
+
+    /* Top scan beam on hover */
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      transform: translateX(-110%);
+      transition: transform 0.6s ease;
+    }
+
+    .feat-card:hover::before { transform: translateX(110%); }
+
+    /* Bottom-left corner bracket */
+    .feat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 12px; left: 12px;
+      width: 18px; height: 18px;
+      border-bottom: 1px solid rgba(181,255,71,0.3);
+      border-left:  1px solid rgba(181,255,71,0.3);
+      transition: border-color 0.3s ease;
+    }
+
+    .feat-card:hover {
+      border-color: rgba(181,255,71,0.38);
+      box-shadow: 0 0 35px rgba(181,255,71,0.07), 0 24px 48px rgba(0,0,0,0.6);
+      transform: translateY(-5px);
+    }
+
+    .feat-card:hover::after {
+      border-color: rgba(181,255,71,0.7);
+    }
+
+    .card-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: rgba(181,255,71,0.45);
+      margin-bottom: 1.1rem;
+    }
+
+    .card-icon {
+      font-size: 1.9rem;
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.9rem;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+    }
+
+    .card-desc {
+      font-size: 0.93rem;
+      color: var(--gray);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    /* ─── CLOSER ─────────────────────────────────── */
+    .closer {
+      background: var(--black);
+      border-top: 1px solid rgba(181,255,71,0.07);
+      text-align: center;
+    }
+
+    .closer-inner { padding: 100px 1.5rem 110px; }
+
+    .closer-pre {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: var(--gray);
+      letter-spacing: 0.18em;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .closer-pre .sys-ok { color: var(--green); }
+
+    .blink {
+      animation: blink-anim 1s step-end infinite;
+      color: var(--green);
+    }
+
+    @keyframes blink-anim {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .divider-bar {
+      width: 55px;
+      height: 2px;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(181,255,71,0.6);
+      margin: 1.4rem auto 2.2rem;
+    }
+
+    .closer-h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.4rem, 3.8vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.25;
+      max-width: 700px;
+      margin: 0 auto 1.2rem;
+    }
+
+    .closer-sub {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: var(--gray);
+      letter-spacing: 0.15em;
+      margin-bottom: 2.8rem;
+      display: block;
+    }
+
+    .window-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.68rem;
+      color: rgba(181,255,71,0.5);
+      letter-spacing: 0.22em;
+      margin-top: 2rem;
+      display: block;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────── */
+    footer {
+      background: #000;
+      border-top: 1px solid rgba(181,255,71,0.06);
+      padding: 1.8rem 1.5rem;
+      text-align: center;
+    }
+
+    footer p {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.68rem;
+      color: rgba(136,136,136,0.45);
+      letter-spacing: 0.12em;
+    }
+
+    footer .fg { color: rgba(181,255,71,0.6); }
+
+    /* ─── SCROLL REVEAL ──────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.2s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+    .reveal-d5 { transition-delay: 0.5s; }
+    .reveal-d6 { transition-delay: 0.55s; }
+
+    /* ─── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .feat-card { padding: 1.8rem 1.5rem; }
+
+      .hero-corner--tl,
+      .hero-corner--tr,
+      .hero-corner--bl,
+      .hero-corner--br { display: none; }
+    }
+
+    @media (max-width: 500px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-status span:not(.pulse-dot) { display: none; }
+      .terminal-card { padding: 2.2rem 1.3rem 1.8rem; }
+      .closer-inner { padding: 70px 1.2rem 80px; }
+      .btn { padding: 0.9rem 1.8rem; font-size: 0.76rem; }
+    }
+
+    /* ─── ACCESSIBILITY ──────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-rain"></canvas>
+
+<div class="wrapper">
+
+  <nav>
+    <div class="nav-logo">funds.glich</div>
+    <div class="nav-status">
+      <span class="pulse-dot"></span>
+      <span>SYSTEM ACTIVE</span>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-corner hero-corner--tl"></div>
+    <div class="hero-corner hero-corner--tr"></div>
+    <div class="hero-corner hero-corner--bl"></div>
+    <div class="hero-corner hero-corner--br"></div>
+
+    <p class="hero-eyebrow reveal reveal-d1">CLASSIFIED PROTOCOL v2.6 — INITIALIZE</p>
+
+    <h1 class="hero-h1 reveal reveal-d2">
+      <span
+        class="glitch-wrap"
+        data-text="THE FINANCIAL SYSTEM HAS A GLITCH. HERE IS YOUR EXPLOIT."
+      >
+        THE FINANCIAL SYSTEM HAS A <span class="text-green">GLITCH.</span><br />
+        HERE IS YOUR <span class="text-green">EXPLOIT.</span>
+      </span>
+    </h1>
+
+    <p class="hero-sub reveal reveal-d3">
+      Stop trading 8 hours a day for pennies. The old playbook is broken. Learn how to leverage faceless digital assets and turn your daily screen time into a cash-yielding machine. No face shown. No boss. Just a phone and Wi-Fi.
+    </p>
+
+    <a href="https://www.instagram.com/funds.glich?igsh=MTVyOWZmYzZ0MnFscg==" class="btn btn-primary reveal reveal-d4">
+      ACCESS THE BLUEPRINT →
+    </a>
+
+    <div class="scroll-hint">▼ &nbsp; SCROLL TO INITIALIZE &nbsp; ▼</div>
+  </section>
+
+  <section class="problem">
+    <div class="container sec-pad">
+      <h2 class="sec-label reveal">// THE MATRIX IS RIGGED.</h2>
+      <div class="terminal-card reveal reveal-d2">
+        <p class="terminal-body">
+          Rent is skyrocketing. Wages are stagnant. You're told to
+          <span class="hi">work hard for 40 years</span> just to survive.
+          But the <span class="hi">wealthiest 1%</span> don't trade time for money — they build systems.
+          While millions are mindlessly scrolling away their hours on Instagram,
+          a <span class="hi">select few</span> are secretly using the exact same algorithms
+          to fund their lifestyle globally.
+          <span class="hi">Which side of the screen are you on?</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="gameplan">
+    <div class="container sec-pad">
+      <h2 class="sec-label reveal">// ENTER FUNDS.GLICH</h2>
+      <div class="cards-grid">
+
+        <div class="feat-card reveal reveal-d2">
+          <div class="card-num">PROTOCOL_01</div>
+          <div class="card-icon">⚡</div>
+          <h3 class="card-title">100% FACELESS AUTOMATION</h3>
+          <p class="card-desc">
+            You don't need to show your face, use your voice, or be a public influencer. Operate entirely behind the scenes.
+          </p>
+        </div>
+
+        <div class="feat-card reveal reveal-d4">
+          <div class="card-num">PROTOCOL_02</div>
+          <div class="card-icon">🌍</div>
+          <h3 class="card-title">HIGH-CPM ARBITRAGE</h3>
+          <p class="card-desc">
+            Sit anywhere in the world and capture the most premium digital traffic from the USA, UK, and Canada where the real money moves.
+          </p>
+        </div>
+
+        <div class="feat-card reveal reveal-d6">
+          <div class="card-num">PROTOCOL_03</div>
+          <div class="card-icon">📲</div>
+          <h3 class="card-title">PHONE-ONLY INFRASTRUCTURE</h3>
+          <p class="card-desc">
+            No expensive camera or heavy setup required. If you can edit a 7-second video on your phone, you can run this protocol.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="closer">
+    <div class="closer-inner">
+
+      <span class="closer-pre reveal reveal-d1">
+        &gt; SYSTEM_STATUS: <span class="sys-ok">GLITCH_WINDOW_OPEN</span><span class="blink">_</span>
+      </span>
+
+      <div class="divider-bar reveal reveal-d2"></div>
+
+      <h2 class="closer-h2 reveal reveal-d3">
+        THE SYSTEM CHANGES FAST.<br />
+        THE GLITCH WON'T STAY OPEN FOREVER.
+      </h2>
+
+      <span class="closer-sub reveal reveal-d4">
+        READY TO ESCAPE THE 9-TO-5 LOOP?
+      </span>
+
+      <a href="https://www.instagram.com/funds.glich?igsh=MTVyOWZmYzZ0MnFscg==" class="btn btn-secondary reveal reveal-d5">
+        CLAIM YOUR EXPLOIT NOW
+      </a>
+
+      <span class="window-tag reveal reveal-d6">// LIMITED ACCESS — WINDOW CLOSING</span>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 <span class="fg">funds.glich</span> &nbsp;|&nbsp; All Rights Reserved &nbsp;|&nbsp; <span class="fg">ENCRYPTED SESSION ACTIVE</span></p>
+  </footer>
+
+</div><script>
+  /* ── Matrix Rain ─────────────────────────────── */
+  (function () {
+    const canvas = document.getElementById('matrix-rain');
+    const ctx    = canvas.getContext('2d');
+    const CHARS  = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ$%#@&*<>{}|/\\ΩΨΦΣΔΛΘαβγ';
+    const FS     = 13;
+    let   cols, drops;
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cols  = Math.floor(canvas.width / FS);
+      drops = Array.from({ length: cols }, () => Math.random() * -50);
+    }
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0,0,0,0.045)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#b5ff47';
+      ctx.font      = `${FS}px "Fira Code", monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+        ctx.fillText(ch, i * FS, drops[i] * FS);
+        if (drops[i] * FS > canvas.height && Math.random() > 0.972) drops[i] = 0;
+        drops[i] += 0.9;
+      }
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+    setInterval(draw, 60);
+  })();
+
+  /* ── Scroll Reveal ───────────────────────────── */
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    const io  = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    els.forEach((el) => io.observe(el));
+  })();
+</script>
+</body>
+</html>
